@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static org.springframework.http.HttpStatus.BAD_GATEWAY;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -28,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handle(final HttpMessageNotReadableException exe) {
         return new ResponseEntity<>(
-            new ErrorResponse(exe.getMessage()), BAD_GATEWAY);
+            new ErrorResponse(exe.getMessage()), BAD_REQUEST);
     }
 
     @ExceptionHandler(NotFoundException.class)
