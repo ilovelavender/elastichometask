@@ -1,14 +1,16 @@
 package com.olegrubin.vicariusdemo.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.olegrubin.vicariusdemo.mapper.ElasticSearchMapper;
-import com.olegrubin.vicariusdemo.model.InternalException;
+import com.olegrubin.vicariusdemo.model.exception.InternalException;
 import com.olegrubin.vicariusdemo.model.elasticsearch.CreateDocumentRequest;
 import com.olegrubin.vicariusdemo.model.elasticsearch.CreateDocumentResponse;
 import com.olegrubin.vicariusdemo.model.elasticsearch.CreateIndexRequest;
 import com.olegrubin.vicariusdemo.model.elasticsearch.CreateIndexResponse;
 import com.olegrubin.vicariusdemo.model.elasticsearch.GetDocumentResponse;
+import com.olegrubin.vicariusdemo.model.exception.NotFoundException;
 import com.olegrubin.vicariusdemo.service.api.ElasticSearchService;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +33,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         try {
             var response = elasticsearchClient.indices().create(mappedRequest);
             return elasticSearchMapper.map(response);
-        } catch (IOException | RuntimeException exe) {
+        } catch (IOException | ElasticsearchException exe) {
             throw new InternalException(
                 "Exception creating index " + request.indexName()
                     + ". Details - " + exe.getMessage(), exe);
@@ -44,7 +46,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         try {
             var response = elasticsearchClient.create(mappedRequest);
             return elasticSearchMapper.map(response);
-        } catch (IOException | RuntimeException exe) {
+        } catch (IOException | ElasticsearchException exe) {
             throw new InternalException(
                 "Exception creating document on index " + request.indexName()
                     + (request.documentId() != null ? " with id " + request.documentId() : "")
@@ -57,8 +59,13 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         var mappedRequest = elasticSearchMapper.map(indexName, documentId);
         try {
             var response = elasticsearchClient.get(mappedRequest, JsonNode.class);
+            if (!response.found()) {
+                throw new NotFoundException(
+                    "Document not found in index " + indexName
+                        + " by id " + documentId);
+            }
             return elasticSearchMapper.map(response);
-        } catch (IOException | RuntimeException exe) {
+        } catch (IOException | ElasticsearchException exe) {
             throw new InternalException(
                 "Exception fetching document from index " + indexName
                     + " by id " + documentId

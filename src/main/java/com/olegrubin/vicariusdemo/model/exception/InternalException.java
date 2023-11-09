@@ -1,4 +1,4 @@
-package com.olegrubin.vicariusdemo.model;
+package com.olegrubin.vicariusdemo.model.exception;
 
 public class InternalException extends RuntimeException {
 

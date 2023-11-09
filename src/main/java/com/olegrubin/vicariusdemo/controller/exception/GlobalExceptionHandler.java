@@ -1,7 +1,8 @@
 package com.olegrubin.vicariusdemo.controller.exception;
 
-import com.olegrubin.vicariusdemo.model.InternalException;
+import com.olegrubin.vicariusdemo.model.exception.InternalException;
 import com.olegrubin.vicariusdemo.model.common.ErrorResponse;
+import com.olegrubin.vicariusdemo.model.exception.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import static org.springframework.http.HttpStatus.BAD_GATEWAY;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -27,6 +29,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(final HttpMessageNotReadableException exe) {
         return new ResponseEntity<>(
             new ErrorResponse(exe.getMessage()), BAD_GATEWAY);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(final NotFoundException exe) {
+        return new ResponseEntity<>(
+            new ErrorResponse(exe.getMessage()), NOT_FOUND);
     }
 
     private static Logger getLogger(final Exception exe) {
